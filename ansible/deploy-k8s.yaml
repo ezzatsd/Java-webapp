@@ -1,0 +1,54 @@
+---
+- name: Importer l image Docker dans les noeuds K3s
+  hosts: k3s_controleur:k3s_agent
+  become: true
+  vars:
+    image_archive: "build/webapp-java.tar"
+    remote_image_archive: "/tmp/webapp-java.tar"
+  tasks:
+    - name: Copier l archive Docker vers le noeud K3s
+      copy:
+        src: "{{ image_archive }}"
+        dest: "{{ remote_image_archive }}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Importer l image dans containerd K3s
+      command: "k3s ctr images import {{ remote_image_archive }}"
+      changed_when: true
+
+- name: Deployer l application Java dans Kubernetes
+  hosts: k3s_controleur
+  become: true
+  vars:
+    app_name: webapp-java
+    app_namespace: devops
+    app_image: webapp-java:latest
+    manifest_dest: /tmp/webapp-java.yaml
+  tasks:
+    - name: Generer le manifeste Kubernetes
+      template:
+        src: templates/webapp-java.yaml.j2
+        dest: "{{ manifest_dest }}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Appliquer le manifeste Kubernetes
+      command: "kubectl apply -f {{ manifest_dest }}"
+      register: kubectl_apply
+      changed_when: "'created' in kubectl_apply.stdout or 'configured' in kubectl_apply.stdout"
+
+    - name: Attendre le deploiement
+      command: "kubectl -n {{ app_namespace }} rollout status deployment/{{ app_name }} --timeout=180s"
+      changed_when: false
+
+    - name: Afficher le service expose
+      command: "kubectl -n {{ app_namespace }} get svc {{ app_name }} -o wide"
+      register: app_service
+      changed_when: false
+
+    - name: Resultat du deploiement
+      debug:
+        var: app_service.stdout
