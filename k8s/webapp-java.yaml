@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: webapp-java
-          image: webapp-java:latest
+          image: webapp-java:6
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
