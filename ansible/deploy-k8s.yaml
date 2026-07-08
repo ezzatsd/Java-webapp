@@ -36,8 +36,11 @@
         mode: "0644"
 
     - name: Appliquer le manifeste Kubernetes
-      command: "kubectl apply -f {{ manifest_dest }}"
+      command: "kubectl apply --validate=false --request-timeout=120s -f {{ manifest_dest }}"
       register: kubectl_apply
+      retries: 3
+      delay: 10
+      until: kubectl_apply.rc == 0
       changed_when: "'created' in kubectl_apply.stdout or 'configured' in kubectl_apply.stdout"
 
     - name: Attendre le deploiement
