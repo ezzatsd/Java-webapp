@@ -6,6 +6,7 @@ pipeline {
         APP_IMAGE = "webapp-java:${BUILD_NUMBER}"
         IMAGE_ARCHIVE = "build/webapp-java-${BUILD_NUMBER}.tar"
         ANSIBLE_INVENTORY = "/var/lib/jenkins/ansible/inventaire"
+        SONAR_HOST_URL = "http://127.0.0.1:9000"
     }
 
     stages {
@@ -41,15 +42,13 @@ pipeline {
 
         stage("Qualite") {
             steps {
-                sh '''
-                    if [ -n "$SONAR_HOST_URL" ]; then
-                      mvn sonar:sonar \
-                        -Dsonar.host.url="$SONAR_HOST_URL" \
-                        ${SONAR_TOKEN:+-Dsonar.token=$SONAR_TOKEN}
-                    else
-                      echo "SONAR_HOST_URL non defini: analyse SonarQube ignoree pour cet environnement."
-                    fi
-                '''
+                withCredentials([string(credentialsId: "sonarqube-token", variable: "SONAR_TOKEN")]) {
+                    sh '''
+                        mvn sonar:sonar \
+                          -Dsonar.host.url="$SONAR_HOST_URL" \
+                          -Dsonar.token="$SONAR_TOKEN"
+                    '''
+                }
             }
         }
 
