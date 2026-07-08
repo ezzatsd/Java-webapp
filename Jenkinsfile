@@ -5,7 +5,7 @@ pipeline {
         APP_NAME = "webapp-java"
         APP_IMAGE = "webapp-java:${BUILD_NUMBER}"
         IMAGE_ARCHIVE = "build/webapp-java-${BUILD_NUMBER}.tar"
-        ANSIBLE_INVENTORY = "/vagrant/ansible/inventaire"
+        ANSIBLE_INVENTORY = "/var/lib/jenkins/ansible/inventaire"
     }
 
     stages {
