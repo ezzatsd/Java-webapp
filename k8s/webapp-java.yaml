@@ -1,15 +1,10 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: devops
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: webapp-java
   namespace: devops
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: webapp-java

@@ -27,6 +27,15 @@
     app_image: webapp-java:latest
     manifest_dest: /tmp/webapp-java.yaml
   tasks:
+    - name: Assurer l existence du namespace
+      command: "kubectl --request-timeout=120s create namespace {{ app_namespace }}"
+      register: namespace_create
+      retries: 3
+      delay: 10
+      until: namespace_create.rc == 0 or 'AlreadyExists' in namespace_create.stderr
+      failed_when: namespace_create.rc != 0 and 'AlreadyExists' not in namespace_create.stderr
+      changed_when: namespace_create.rc == 0
+
     - name: Generer le manifeste Kubernetes
       template:
         src: templates/webapp-java.yaml.j2
