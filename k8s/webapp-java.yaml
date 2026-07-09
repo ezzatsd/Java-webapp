@@ -17,16 +17,19 @@ spec:
         - name: webapp-java
           image: webapp-java:6
           imagePullPolicy: IfNotPresent
+          env:
+            - name: JAVA_OPTS
+              value: "-XX:MaxRAMPercentage=70 -XX:InitialRAMPercentage=30"
           ports:
             - containerPort: 8080
               name: http
           resources:
             requests:
               cpu: 50m
-              memory: 128Mi
+              memory: 256Mi
             limits:
-              cpu: 300m
-              memory: 384Mi
+              cpu: 500m
+              memory: 768Mi
 ---
 apiVersion: v1
 kind: Service
